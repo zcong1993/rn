@@ -21,7 +21,7 @@ func main() {
 		revert bool
 	)
 	dmp := diffmatchpatch.New()
-	revertReg := regexp.MustCompile(`^S\d{2}E\d{2} - `)
+	revertReg := regexp.MustCompile(`^S\d{2}E\d{2,4} - `)
 
 	app := &cli.App{
 		Name:  "rn",
