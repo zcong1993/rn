@@ -19,6 +19,7 @@ func main() {
 		start  int
 		prefix string
 		revert bool
+		width int
 	)
 	dmp := diffmatchpatch.New()
 	revertReg := regexp.MustCompile(`^S\d{2}E\d{2,4} - `)
@@ -55,6 +56,12 @@ func main() {
 				Usage:       "revert renaming",
 				Destination: &revert,
 			},
+			&cli.IntFlag{
+				Name:        "width",
+				Value:       2,
+				Usage:       "number width",
+				Destination: &width,
+			},
 		},
 		Action: func(*cli.Context) error {
 			fs, err := filepath.Glob(files)
@@ -69,7 +76,7 @@ func main() {
 				if revert {
 					r[1] = revertReg.ReplaceAllString(f, "")
 				} else {
-					r[1] = fmt.Sprintf("%s%s - %s", prefix, handleNumber(start), f)
+					r[1] = fmt.Sprintf("%s%s - %s", prefix, padNumber(width, start), f)
 				}
 				res = append(res, r)
 				start++
@@ -92,9 +99,6 @@ func main() {
 	}
 }
 
-func handleNumber(i int) string {
-	if i < 10 {
-		return fmt.Sprintf("0%d", i)
-	}
-	return fmt.Sprintf("%d", i)
+func padNumber(width, num int) string {
+	return fmt.Sprintf("%0*d", width, num)
 }
