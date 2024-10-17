@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/urfave/cli/v2"
@@ -71,6 +72,9 @@ func main() {
 			sort.Strings(fs)
 			var res [][2]string
 			for _, f := range fs {
+				if strings.HasPrefix(filepath.Base(f), ".") {
+					continue
+				}
 				var r [2]string
 				r[0] = f
 				if revert {
