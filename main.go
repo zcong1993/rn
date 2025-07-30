@@ -28,7 +28,7 @@ func main() {
 			},
 			&cli.BoolFlag{
 				Name:  "write",
-				Usage: "actully do rename",
+				Usage: "actually do rename",
 			},
 			&cli.IntFlag{
 				Name:  "start",
@@ -55,15 +55,15 @@ func main() {
 		Commands: []*cli.Command{
 			{
 				Name:  "mv",
-				Usage: "根据配置文件批量移动文件",
+				Usage: "Batch move files according to config file",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:  "config",
-						Usage: "配置文件路径，默认为 .mv.json",
+						Usage: "config file path, default is .mv.json",
 					},
 					&cli.BoolFlag{
 						Name:  "write",
-						Usage: "实际执行移动操作（默认仅dry-run）",
+						Usage: "actually perform move operation (default is dry-run only)",
 					},
 				},
 				Action: mv(),
@@ -140,12 +140,12 @@ func mv() cli.ActionFunc {
 
 		data, err := os.ReadFile(configFile)
 		if err != nil {
-			return fmt.Errorf("读取配置文件失败: %w", err)
+			return fmt.Errorf("failed to read config file: %w", err)
 		}
 
 		var rules []MoveRule
 		if err := json.Unmarshal(data, &rules); err != nil {
-			return fmt.Errorf("解析配置文件失败: %w", err)
+			return fmt.Errorf("failed to parse config file: %w", err)
 		}
 
 		compiledRules := make([]struct {
@@ -156,7 +156,7 @@ func mv() cli.ActionFunc {
 		for i, rule := range rules {
 			re, err := regexp.Compile(rule.Regex)
 			if err != nil {
-				return fmt.Errorf("正则表达式编译失败 %s: %w", rule.Regex, err)
+				return fmt.Errorf("failed to compile regex %s: %w", rule.Regex, err)
 			}
 			compiledRules[i].re = re
 			compiledRules[i].dest = rule.Dest
@@ -169,7 +169,7 @@ func mv() cli.ActionFunc {
 		for _, rule := range compiledRules {
 			files, err := filepath.Glob("*")
 			if err != nil {
-				return fmt.Errorf("扫描目录失败: %w", err)
+				return fmt.Errorf("failed to scan directory: %w", err)
 			}
 
 			for _, name := range files {
@@ -179,17 +179,17 @@ func mv() cli.ActionFunc {
 				destPath := filepath.Join(rule.dest, name)
 				if write {
 					if err := os.Rename(name, destPath); err != nil {
-						return fmt.Errorf("移动失败 %s -> %s: %w", name, destPath, err)
+						return fmt.Errorf("failed to move %s -> %s: %w", name, destPath, err)
 					}
 					fmt.Printf("%s: %s %s %s\n",
-						moveColor("已移动"),
+						moveColor("Moved"),
 						pathColor(name),
 						color.New(color.FgMagenta).Sprint("→"),
 						pathColor(destPath),
 					)
 				} else {
 					fmt.Printf("%s: %s %s %s\n",
-						dryRunColor("[dry-run] 将移动"),
+						dryRunColor("[dry-run] Will move"),
 						pathColor(name),
 						color.New(color.FgMagenta).Sprint("→"),
 						pathColor(destPath),
