@@ -166,35 +166,43 @@ func mv() cli.ActionFunc {
 		moveColor := color.New(color.FgGreen).SprintFunc()
 		pathColor := color.New(color.FgCyan).SprintFunc()
 
-		for _, rule := range compiledRules {
-			files, err := filepath.Glob("*")
-			if err != nil {
-				return fmt.Errorf("failed to scan directory: %w", err)
-			}
+		files, err := filepath.Glob("*")
+		if err != nil {
+			return fmt.Errorf("failed to scan directory: %w", err)
+		}
 
-			for _, name := range files {
-				if !rule.re.MatchString(name) {
-					continue
+		var results [][2]string
+
+		for _, file := range files {
+			for _, rule := range compiledRules {
+				if rule.re.MatchString(file) {
+					destPath := filepath.Join(rule.dest, file)
+					results = append(results, [2]string{file, destPath})
+					break
 				}
-				destPath := filepath.Join(rule.dest, name)
-				if write {
-					if err := os.Rename(name, destPath); err != nil {
-						return fmt.Errorf("failed to move %s -> %s: %w", name, destPath, err)
-					}
-					fmt.Printf("%s: %s %s %s\n",
-						moveColor("Moved"),
-						pathColor(name),
-						color.New(color.FgMagenta).Sprint("→"),
-						pathColor(destPath),
-					)
-				} else {
-					fmt.Printf("%s: %s %s %s\n",
-						dryRunColor("[dry-run] Will move"),
-						pathColor(name),
-						color.New(color.FgMagenta).Sprint("→"),
-						pathColor(destPath),
-					)
+			}
+		}
+
+		for _, r := range results {
+			name, destPath := r[0], r[1]
+
+			if write {
+				if err := os.Rename(name, destPath); err != nil {
+					return fmt.Errorf("failed to move %s -> %s: %w", name, destPath, err)
 				}
+				fmt.Printf("%s: %s %s %s\n",
+					moveColor("Moved"),
+					pathColor(name),
+					color.New(color.FgMagenta).Sprint("→"),
+					pathColor(destPath),
+				)
+			} else {
+				fmt.Printf("%s: %s %s %s\n",
+					dryRunColor("[dry-run] Will move"),
+					pathColor(name),
+					color.New(color.FgMagenta).Sprint("→"),
+					pathColor(destPath),
+				)
 			}
 		}
 
