@@ -174,6 +174,9 @@ func mv() cli.ActionFunc {
 		var results [][2]string
 
 		for _, file := range files {
+			if file[0] == '.' {
+				continue
+			}
 			for _, rule := range compiledRules {
 				if rule.re.MatchString(file) {
 					destPath := filepath.Join(rule.dest, file)
